@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_jwt_extended import JWTManager
@@ -75,4 +75,4 @@ def health_check():
 # Home route
 @app.route('/', methods=['GET'])
 def index():
-    return "Welcome to Local Service Platform API"
+    return render_template('index.html')
