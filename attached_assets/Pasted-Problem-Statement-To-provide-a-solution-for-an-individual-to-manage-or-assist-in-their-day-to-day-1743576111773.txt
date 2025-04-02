@@ -1,0 +1,130 @@
+Problem Statement
+
+To provide a solution for an individual to manage or assist in their day-to-day activities (via Service Consumer and Provider mechanism).
+
+Requirement
+
+Local Service Platform
+
+This application would consist of the following scope or features. It will consist of these main components:
+
+Car/Bike Pool Service
+Gym Fitness Service
+Household Service
+Mechanical Service
+Feedback Service
+Assumptions
+
+There will be 3 types of users:
+User => Service consumer (SC)
+Power User => Service provider (SP)
+Admin => Managing both the users
+Highest to lowest access: Admin > Power User > User
+Wallet will be used for booking any services. Hence all the payment transactions will be in digital format. To avail/consume a service, wallet balance should be maintained. Each user is associated with only one wallet.
+Users can avail multiple requests or services. A Service-cart will track all On-Demand service requests (e.g., Household services, Mechanical Services, Car/Bike Pool, etc.), which can be cleared during checkout or payment.
+Some services are subscription-based, such as Gym fitness services.
+Functional Requirements
+
+1. User Service
+
+User Profile
+Users should be able to register themselves.
+Users should be able to request any available service.
+Users can view and update their wallet balance.
+Users can cancel their booked services, and the amount paid will be refunded to their wallet.
+ 
+
+Service Provider
+Service providers can register themselves but need admin approval to become active.
+Only active service providers can provide services.
+Admin
+Can add, update, view, or delete services.
+Can approve service provider requests.
+Can deactivate service providers when necessary.
+2. Wallet Service
+
+All payment transactions will be done through wallets.
+Each User, Power User, and Admin has an associated wallet.
+When a user books a service:
+Admin receives 10% of the amount in their wallet.
+The rest is transferred to the service provider's wallet.
+Users can add money to their wallets.
+Users can check wallet balances.
+Users cannot transfer money to another wallet.
+Users can view their last 5 transaction histories.
+All services are prepaid.
+On cancellations or rejections, the full amount is refunded.
+3. Car/Bike Pool Service
+
+Service providers (SP) can accept booking requests and set service charges.
+Users can see available seats and capacity.
+SP must list available cars and bikes for requested routes with price and timing details.
+SP should update users about their bookings.
+If the car or bike is fully booked, it should not appear in availability lists.
+4. Gym Fitness Services
+
+Users can view available gym providers and their subscription plans (Monthly, Quarterly, or Annually).
+Users can select a trainer/dietician.
+Users will get details about their selected course/plan.
+Gym providers offer various services like fitness, Zumba, aerobics, yoga, cross-fit, etc.
+Users can view and update their plan details.
+5. Household Services
+
+Provides services like maid, plumbing, pest control, electrical services, etc.
+Users can view available services, provider details (pricing, visiting hours, etc.), and book or cancel services as needed.
+6. Mechanical Services
+
+Offers vehicle repair and maintenance services.
+Users can view available service providers with fixed charges (excluding spare parts).
+Users should receive booking confirmations from service providers (status: booked, rejected, or completed).
+7. Feedback Services
+
+Users can provide reviews and ratings for service providers.
+The application should display ratings and reviews for each service provider.
+Technical Requirements
+
+Use Java 8 or higher with Spring Boot.
+Validate email, mandatory parameters, etc., and return appropriate HTTP error responses.
+Secure REST endpoints and implement a health check endpoint to return database connection status and application version.
+Use Swagger API documentation.
+Implement authentication.
+Use a single SQL database for all data storage.
+Use a layered architecture with Controller-Service-Repository structure.
+Synchronous communication between components (No Kafka/RabbitMQ).
+Apply SOLID design principles.
+SonarQube integration.
+Unit and Integration tests.
+Architecture
+
+Monolithic Architecture
+Single database instance for all services.
+Centralized business logic within a single application package.
+API-based interactions.
+Logging and monitoring mechanisms.
+Database schema design with ER Diagram.
+Architectural diagram with workflow details (HLD & LLD).
+Fault tolerance mechanisms like Circuit Breaker (Hystrix/Resilience4J).
+Out of Scope
+
+UI development is not required; all operations will be tested via Postman or REST Client.
+ 
+Deployment
+
+Application should be packaged using Docker.
+CI/CD pipeline setup is preferable.
+Best Engineering Practices
+
+Use Maven/Gradle for build management.
+Ensure test coverage of at least 70%; fail builds if coverage is below this threshold.
+Implement static code analysis.
+Use version control (Git).
+Pre-requisites
+
+Java 8 or higher
+Maven/Gradle
+STS or any IDE
+Docker
+Git access
+SQL DB
+Postman
+JUnit
