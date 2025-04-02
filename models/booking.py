@@ -21,7 +21,8 @@ class Booking(db.Model):
     
     # Relationships
     user = db.relationship('User', backref=db.backref('bookings', lazy=True))
-    service = db.relationship('Service', backref=db.backref('bookings', lazy=True))
+    # Remove the backref to avoid circular definition with Service model
+    service = db.relationship('Service', foreign_keys="Booking.service_id", lazy=True)
     transaction = db.relationship('Transaction', backref=db.backref('booking', uselist=False), lazy=True)
     
     def __init__(self, service_id, user_id, amount, quantity=1, notes=None):
