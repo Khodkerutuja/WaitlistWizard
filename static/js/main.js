@@ -1,3 +1,6 @@
+// Global CSRF token
+window.csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
 // Wait for DOM content to be loaded
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize Feather icons
@@ -322,7 +325,8 @@ function processPayment(bookingId) {
     fetch(`/bookings/${bookingId}/payment`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': window.csrfToken
         }
     })
     .then(response => response.json())
@@ -356,7 +360,8 @@ function cancelBooking(bookingId) {
     fetch(`/bookings/${bookingId}/cancel`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': window.csrfToken
         }
     })
     .then(response => response.json())
@@ -390,7 +395,8 @@ function completeBooking(bookingId) {
     fetch(`/bookings/${bookingId}/complete`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': window.csrfToken
         }
     })
     .then(response => response.json())
@@ -424,7 +430,8 @@ function confirmBooking(bookingId) {
     fetch(`/bookings/${bookingId}/confirm`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': window.csrfToken
         }
     })
     .then(response => response.json())
@@ -460,7 +467,8 @@ function rejectBooking(bookingId) {
     fetch(`/bookings/${bookingId}/reject`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': window.csrfToken
         },
         body: JSON.stringify({ reason: reason })
     })

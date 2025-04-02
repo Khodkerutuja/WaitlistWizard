@@ -10,8 +10,9 @@ from flask_wtf.csrf import CSRFProtect
 from werkzeug.security import generate_password_hash, check_password_hash
 from forms import LoginForm, RegistrationForm
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
+# Configure detailed logging
+logging.basicConfig(level=logging.DEBUG, 
+                   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -33,8 +34,14 @@ csrf = CSRFProtect(app)
 # Add CSRF token to all templates
 @app.context_processor
 def inject_csrf_token():
-    from flask_wtf.csrf import generate_csrf
-    return {'csrf_token': generate_csrf()}
+    try:
+        from flask_wtf.csrf import generate_csrf
+        csrf_token = generate_csrf()
+        logging.debug(f"Generated CSRF token type: {type(csrf_token)}")
+        return {'csrf_token': csrf_token}
+    except Exception as e:
+        logging.error(f"Error generating CSRF token: {str(e)}")
+        return {'csrf_token': ''}
 
 # Import and register blueprints
 from controllers.auth_controller import auth_bp

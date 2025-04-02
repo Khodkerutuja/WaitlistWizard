@@ -269,6 +269,9 @@
             // Initialize feather icons
             feather.replace();
             
+            // Set csrf token for AJAX requests
+            window.csrfToken = "{{ csrf_token }}";
+            
             // Fetch wallet data
             fetchWalletData();
             
@@ -553,6 +556,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRF-Token': window.csrfToken
                 },
                 body: JSON.stringify({
                     amount: amount
@@ -606,6 +610,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRF-Token': window.csrfToken
                 },
                 body: JSON.stringify({
                     to_user_id: recipient,

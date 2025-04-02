@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <title>My Bookings - Local Service Platform</title>
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.css">
@@ -118,6 +119,9 @@
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     
     <script>
+        // Initialize CSRF token
+        window.csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+        
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize the bookings page
             feather.replace();
@@ -322,7 +326,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer {{ session.get('jwt_token', '') }}'
+                        'X-CSRF-Token': window.csrfToken
                     }
                 })
                 .then(response => response.json())
@@ -351,7 +355,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer {{ session.get('jwt_token', '') }}'
+                        'X-CSRF-Token': window.csrfToken
                     }
                 })
                 .then(response => response.json())
@@ -380,7 +384,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer {{ session.get('jwt_token', '') }}'
+                        'X-CSRF-Token': window.csrfToken
                     }
                 })
                 .then(response => response.json())
@@ -410,7 +414,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer {{ session.get('jwt_token', '') }}'
+                        'X-CSRF-Token': window.csrfToken
                     },
                     body: JSON.stringify({ reason: reason })
                 })
@@ -440,7 +444,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer {{ session.get('jwt_token', '') }}'
+                        'X-CSRF-Token': window.csrfToken
                     }
                 })
                 .then(response => response.json())

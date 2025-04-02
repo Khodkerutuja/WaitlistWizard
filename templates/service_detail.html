@@ -218,7 +218,7 @@
                         {% if session.get('user_id') %}
                             {% if service.status == 'AVAILABLE' %}
                             <form method="post" action="{{ url_for('book_service', service_id=service.id) }}">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                                 
                                 {% if service.service_type == 'CAR_POOL' %}
                                 <div class="mb-3">
@@ -335,7 +335,7 @@
                 </div>
                 <form method="post" action="{{ url_for('add_review', service_id=service.id) }}">
                     <div class="modal-body">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                         <div class="mb-3">
                             <label for="rating" class="form-label">Rating</label>
                             <select class="form-select" id="rating" name="rating" required>
