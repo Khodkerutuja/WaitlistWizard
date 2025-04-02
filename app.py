@@ -227,7 +227,7 @@ def book_service(service_id):
     
     # Import here to avoid circular imports
     from models.service import Service
-    from models.service import Booking
+    from models.booking import Booking
     from models.user import User
     
     service = Service.query.get_or_404(service_id)
