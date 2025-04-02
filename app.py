@@ -87,14 +87,14 @@ def login_page():
     
     if form.validate_on_submit():
         # Import here to avoid circular imports
-        from models.user_model import User
+        from models.user import User
         
         email = form.email.data
         password = form.password.data
         
         user = User.query.filter_by(email=email).first()
         
-        if user and check_password_hash(user.password, password):
+        if user and check_password_hash(user.password_hash, password):
             # Create access token
             access_token = create_access_token(identity=user.id)
             
@@ -119,8 +119,8 @@ def register_page():
     
     if form.validate_on_submit():
         # Import here to avoid circular imports
-        from models.user_model import User
-        from models.wallet_model import Wallet
+        from models.user import User
+        from models.wallet import Wallet
         
         # Check if email already exists
         existing_user = User.query.filter_by(email=form.email.data).first()
@@ -130,14 +130,15 @@ def register_page():
             # Create new user
             new_user = User(
                 email=form.email.data,
-                password=generate_password_hash(form.password.data),
+                password=form.password.data,
                 first_name=form.first_name.data,
                 last_name=form.last_name.data,
                 phone_number=form.phone_number.data,
-                address=form.address.data,
-                role=form.role.data,
-                status='ACTIVE'
+                role=form.role.data
             )
+            
+            # Additional fields
+            new_user.address = form.address.data
             
             # Add service provider details if applicable
             if form.role.data == 'POWER_USER':
@@ -169,9 +170,9 @@ def logout():
 @app.route('/service/<int:service_id>')
 def service_detail(service_id):
     # Import here to avoid circular imports
-    from models.service_model import Service
-    from models.user_model import User
-    from models.feedback_model import Feedback
+    from models.service import Service
+    from models.user import User
+    from models.feedback import Feedback
     
     service = Service.query.get_or_404(service_id)
     provider = User.query.get_or_404(service.provider_id)
@@ -202,9 +203,9 @@ def book_service(service_id):
         return redirect(url_for('login_page'))
     
     # Import here to avoid circular imports
-    from models.service_model import Service
-    from models.booking_model import Booking
-    from models.user_model import User
+    from models.service import Service
+    from models.service import Booking
+    from models.user import User
     
     service = Service.query.get_or_404(service_id)
     
@@ -232,8 +233,7 @@ def book_service(service_id):
     booking = Booking(
         service_id=service_id,
         user_id=session['user_id'],
-        booking_date=booking_date,
-        status='CONFIRMED',
+        booking_time=booking_date,
         amount=service.price
     )
     
@@ -251,8 +251,8 @@ def add_review(service_id):
         return redirect(url_for('login_page'))
     
     # Import here to avoid circular imports
-    from models.service_model import Service
-    from models.feedback_model import Feedback
+    from models.service import Service
+    from models.feedback import Feedback
     
     service = Service.query.get_or_404(service_id)
     
@@ -262,8 +262,9 @@ def add_review(service_id):
     
     # Create feedback
     feedback = Feedback(
-        service_id=service_id,
         user_id=session['user_id'],
+        provider_id=service.provider_id,
+        service_id=service_id,
         rating=rating,
         review=review_text
     )
@@ -279,8 +280,8 @@ def add_review(service_id):
 def get_services_ui():
     """Get services for UI display with filtering options"""
     # Import here to avoid circular imports
-    from models.service_model import Service
-    from models.user_model import User
+    from models.service import Service
+    from models.user import User
     
     # Get query parameters
     service_type = request.args.get('service_type')
@@ -306,7 +307,7 @@ def get_services_ui():
             'name': service.name,
             'description': service.description,
             'service_type': service.service_type,
-            'price': service.price,
+            'price': float(service.price),
             'status': service.status,
             'provider_id': service.provider_id,
             'provider_name': provider_name,
