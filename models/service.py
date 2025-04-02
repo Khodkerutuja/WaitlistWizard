@@ -27,7 +27,8 @@ class Service(db.Model):
     
     # Relationships
     provider = db.relationship('User', backref='services')
-    bookings = db.relationship('Booking', backref='service', lazy=True)
+    # Remove the backref to avoid circular definition with Booking model
+    bookings = db.relationship('Booking', foreign_keys="Booking.service_id", lazy=True)
     feedbacks = db.relationship('Feedback', backref='service', lazy=True)
     
     def __init__(self, name, description, provider_id, service_type, price, location=None, availability=None):
