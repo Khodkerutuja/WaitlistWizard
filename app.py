@@ -121,6 +121,10 @@ def login_page():
             session['user_role'] = user.role
             session['jwt_token'] = access_token
             
+            # Add debug logging
+            import logging
+            logging.debug(f"User logged in: id={user.id}, email={user.email}, role={user.role}")
+            
             flash('Login successful!', 'success')
             return redirect(url_for('index', login='success'))
         else:
@@ -221,9 +225,14 @@ def service_detail(service_id):
 # Book service route
 @app.route('/service/<int:service_id>/book', methods=['POST'])
 def book_service(service_id):
-    if not session.get('user_id'):
+    user_id = session.get('user_id')
+    if not user_id:
         flash('Please login to book a service.', 'danger')
         return redirect(url_for('login_page'))
+    
+    # Debug to check actual user ID
+    import logging
+    logging.debug(f"Booking service with user_id={user_id}, type={type(user_id)}")
     
     # Import here to avoid circular imports
     from models.service import Service
@@ -265,10 +274,19 @@ def book_service(service_id):
             # If parsing fails, use current time
             booking_datetime = datetime.utcnow()
     
+    # Check if user exists in the database
+    from models.user import User
+    user = User.query.get(user_id)
+    if not user:
+        import logging
+        logging.error(f"User with ID {user_id} does not exist in database")
+        flash('There was an error creating your booking. Please try again.', 'danger')
+        return redirect(url_for('service_detail', service_id=service_id))
+
     # Create booking
     booking = Booking(
         service_id=service_id,
-        user_id=session['user_id'],
+        user_id=user_id,
         amount=service.price,
         quantity=quantity,
         notes=notes,
