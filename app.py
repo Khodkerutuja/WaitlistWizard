@@ -175,6 +175,7 @@ def service_detail(service_id):
     from models.service import Service
     from models.user import User
     from models.feedback import Feedback
+    from datetime import date
     
     service = Service.query.get_or_404(service_id)
     provider = User.query.get_or_404(service.provider_id)
@@ -184,9 +185,13 @@ def service_detail(service_id):
     
     # Calculate average rating
     avg_rating = None
+    total_ratings = len(reviews)
     if reviews:
         total_rating = sum(review.rating for review in reviews)
         avg_rating = round(total_rating / len(reviews), 1)
+    
+    # Get today's date for the booking form
+    today_date = date.today().isoformat()
     
     return render_template(
         'service_detail.html',
@@ -194,7 +199,8 @@ def service_detail(service_id):
         provider=provider,
         reviews=reviews,
         avg_rating=avg_rating,
-        total_ratings=len(reviews)
+        total_ratings=total_ratings,
+        today_date=today_date
     )
 
 # Book service route
@@ -218,10 +224,13 @@ def book_service(service_id):
     
     # Get form data
     booking_date = request.form.get('booking_date')
+    notes = request.form.get('notes', '')
     
     # For car pool services, handle seat booking
+    quantity = 1
     if service.service_type == 'CAR_POOL':
         num_seats = int(request.form.get('num_seats', 1))
+        quantity = num_seats
         
         # Check if enough seats are available
         if num_seats > service.available_seats:
@@ -236,7 +245,10 @@ def book_service(service_id):
         service_id=service_id,
         user_id=session['user_id'],
         booking_time=booking_date,
-        amount=service.price
+        amount=service.price,
+        quantity=quantity,
+        notes=notes,
+        status='PENDING'
     )
     
     db.session.add(booking)

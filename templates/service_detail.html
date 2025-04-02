@@ -23,6 +23,17 @@
                     </li>
                     {% if session.get('user_id') %}
                     <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('my_bookings') }}">My Bookings</a>
+                    </li>
+                    {% if session.get('user_role') == 'POWER_USER' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="alert('My Services feature coming soon!')">My Services</a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('wallet_page') }}">Wallet</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
                     </li>
                     {% else %}
@@ -212,26 +223,38 @@
                                 {% if service.service_type == 'CAR_POOL' %}
                                 <div class="mb-3">
                                     <label for="num_seats" class="form-label">Number of Seats</label>
-                                    <input type="number" class="form-control" id="num_seats" name="num_seats" min="1" max="{{ service.available_seats }}" required>
+                                    <input type="number" class="form-control" id="num_seats" name="num_seats" min="1" max="{{ service.available_seats }}" value="1" required>
                                 </div>
                                 {% endif %}
                                 
                                 <div class="mb-3">
                                     <label for="booking_date" class="form-label">Booking Date</label>
-                                    <input type="date" class="form-control" id="booking_date" name="booking_date" required>
+                                    <input type="date" class="form-control" id="booking_date" name="booking_date" value="{{ today_date }}" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="notes" class="form-label">Notes (Optional)</label>
+                                    <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
                                 </div>
                                 
                                 <div class="d-grid">
-                                    <button type="submit" class="btn btn-primary">Book Now</button>
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i data-feather="plus-circle" class="me-2"></i>Join Now
+                                    </button>
+                                </div>
+                                <div class="text-center mt-2">
+                                    <small class="text-muted">You can manage your bookings in the <a href="{{ url_for('my_bookings') }}">My Bookings</a> page</small>
                                 </div>
                             </form>
                             {% else %}
                             <div class="alert alert-warning">
+                                <i data-feather="alert-triangle" class="me-2"></i>
                                 This service is currently unavailable for booking.
                             </div>
                             {% endif %}
                         {% else %}
                         <div class="alert alert-info">
+                            <i data-feather="info" class="me-2"></i>
                             Please <a href="{{ url_for('login_page') }}">log in</a> to book this service.
                         </div>
                         {% endif %}
