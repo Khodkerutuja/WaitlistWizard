@@ -306,3 +306,184 @@ function checkForLoginNotifications() {
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 }
+
+/**
+ * Process payment for a booking
+ * @param {number} bookingId - Booking ID
+ */
+function processPayment(bookingId) {
+    if (!confirm('Are you sure you want to process payment for this booking?')) {
+        return;
+    }
+    
+    // Show loading notification
+    showNotification('Processing payment...', 'info');
+    
+    fetch(`/bookings/${bookingId}/payment`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            showNotification(data.error, 'danger');
+        } else {
+            showNotification(data.message || 'Payment processed successfully!', 'success');
+            // Reload bookings after payment
+            setTimeout(() => fetchBookings(), 1000);
+        }
+    })
+    .catch(error => {
+        console.error('Error processing payment:', error);
+        showNotification('Error processing payment. Please try again.', 'danger');
+    });
+}
+
+/**
+ * Cancel a booking
+ * @param {number} bookingId - Booking ID
+ */
+function cancelBooking(bookingId) {
+    if (!confirm('Are you sure you want to cancel this booking?')) {
+        return;
+    }
+    
+    // Show loading notification
+    showNotification('Cancelling booking...', 'info');
+    
+    fetch(`/bookings/${bookingId}/cancel`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            showNotification(data.error, 'danger');
+        } else {
+            showNotification(data.message || 'Booking cancelled successfully!', 'success');
+            // Reload bookings after cancellation
+            setTimeout(() => fetchBookings(), 1000);
+        }
+    })
+    .catch(error => {
+        console.error('Error cancelling booking:', error);
+        showNotification('Error cancelling booking. Please try again.', 'danger');
+    });
+}
+
+/**
+ * Complete a booking (service provider only)
+ * @param {number} bookingId - Booking ID
+ */
+function completeBooking(bookingId) {
+    if (!confirm('Are you sure you want to mark this booking as completed?')) {
+        return;
+    }
+    
+    // Show loading notification
+    showNotification('Completing booking...', 'info');
+    
+    fetch(`/bookings/${bookingId}/complete`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            showNotification(data.error, 'danger');
+        } else {
+            showNotification(data.message || 'Booking marked as completed!', 'success');
+            // Reload bookings after completion
+            setTimeout(() => fetchBookings(), 1000);
+        }
+    })
+    .catch(error => {
+        console.error('Error completing booking:', error);
+        showNotification('Error completing booking. Please try again.', 'danger');
+    });
+}
+
+/**
+ * Confirm a booking (service provider only)
+ * @param {number} bookingId - Booking ID
+ */
+function confirmBooking(bookingId) {
+    if (!confirm('Are you sure you want to confirm this booking?')) {
+        return;
+    }
+    
+    // Show loading notification
+    showNotification('Confirming booking...', 'info');
+    
+    fetch(`/bookings/${bookingId}/confirm`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            showNotification(data.error, 'danger');
+        } else {
+            showNotification(data.message || 'Booking confirmed successfully!', 'success');
+            // Reload bookings after confirmation
+            setTimeout(() => fetchBookings(), 1000);
+        }
+    })
+    .catch(error => {
+        console.error('Error confirming booking:', error);
+        showNotification('Error confirming booking. Please try again.', 'danger');
+    });
+}
+
+/**
+ * Reject a booking (service provider only)
+ * @param {number} bookingId - Booking ID
+ */
+function rejectBooking(bookingId) {
+    if (!confirm('Are you sure you want to reject this booking?')) {
+        return;
+    }
+    
+    const reason = prompt('Please provide a reason for rejection (optional):');
+    
+    // Show loading notification
+    showNotification('Rejecting booking...', 'info');
+    
+    fetch(`/bookings/${bookingId}/reject`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ reason: reason })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            showNotification(data.error, 'danger');
+        } else {
+            showNotification(data.message || 'Booking rejected successfully!', 'success');
+            // Reload bookings after rejection
+            setTimeout(() => fetchBookings(), 1000);
+        }
+    })
+    .catch(error => {
+        console.error('Error rejecting booking:', error);
+        showNotification('Error rejecting booking. Please try again.', 'danger');
+    });
+}
+
+/**
+ * Add a review for a service
+ * @param {number} serviceId - Service ID
+ */
+function addReview(serviceId) {
+    window.location.href = `/service/${serviceId}#review-form`;
+}

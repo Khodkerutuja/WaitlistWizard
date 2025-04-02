@@ -430,6 +430,94 @@ def cancel_booking_ui(booking_id):
         logging.error(f"Error in cancel_booking_ui: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/bookings/<int:booking_id>/confirm', methods=['POST'])
+def confirm_booking_ui(booking_id):
+    """Confirm a booking (provider only)"""
+    # Import here to avoid circular imports
+    from services.booking_service import BookingService
+    from services.service_service import ServiceService
+    
+    # Check if user is logged in
+    if not session.get('user_id'):
+        return jsonify({"error": "Not authenticated"}), 401
+    
+    try:
+        user_id = session['user_id']
+        user_role = session.get('user_role')
+        
+        if user_role != 'POWER_USER' and user_role != 'ADMIN':
+            return jsonify({"error": "Only service providers can confirm bookings"}), 403
+        
+        # Get the booking
+        booking = BookingService.get_booking(booking_id)
+        if not booking:
+            return jsonify({"error": "Booking not found"}), 404
+        
+        # Check if it's the provider's service
+        service = ServiceService.get_service(booking.service_id)
+        
+        if service.provider_id != user_id and user_role != 'ADMIN':
+            return jsonify({"error": "Not your service"}), 403
+        
+        # Confirm the booking
+        success, message = BookingService.confirm_booking(booking_id)
+        
+        if success:
+            return jsonify({"message": message}), 200
+        else:
+            return jsonify({"error": message}), 400
+            
+    except Exception as e:
+        import logging
+        logging.error(f"Error in confirm_booking_ui: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/bookings/<int:booking_id>/reject', methods=['POST'])
+def reject_booking_ui(booking_id):
+    """Reject a booking (provider only)"""
+    # Import here to avoid circular imports
+    from services.booking_service import BookingService
+    from services.service_service import ServiceService
+    
+    # Check if user is logged in
+    if not session.get('user_id'):
+        return jsonify({"error": "Not authenticated"}), 401
+    
+    try:
+        user_id = session['user_id']
+        user_role = session.get('user_role')
+        
+        if user_role != 'POWER_USER' and user_role != 'ADMIN':
+            return jsonify({"error": "Only service providers can reject bookings"}), 403
+        
+        # Get the booking
+        booking = BookingService.get_booking(booking_id)
+        if not booking:
+            return jsonify({"error": "Booking not found"}), 404
+        
+        # Check if it's the provider's service
+        service = ServiceService.get_service(booking.service_id)
+        
+        if service.provider_id != user_id and user_role != 'ADMIN':
+            return jsonify({"error": "Not your service"}), 403
+        
+        # Get reason from request body
+        data = request.get_json(silent=True) or {}
+        reason = data.get('reason')
+        
+        # Reject the booking
+        success, message = BookingService.reject_booking(booking_id, reason)
+        
+        if success:
+            return jsonify({"message": message}), 200
+        else:
+            return jsonify({"error": message}), 400
+            
+    except Exception as e:
+        import logging
+        logging.error(f"Error in reject_booking_ui: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/bookings/<int:booking_id>/complete', methods=['POST'])
 def complete_booking_ui(booking_id):
     """Mark a booking as completed (provider only)"""
@@ -473,95 +561,7 @@ def complete_booking_ui(booking_id):
         logging.error(f"Error in complete_booking_ui: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/bookings/<int:booking_id>/confirm', methods=['POST'])
-def confirm_booking_ui(booking_id):
-    """Confirm a booking (provider only)"""
-    # Import here to avoid circular imports
-    from services.booking_service import BookingService
-    from services.service_service import ServiceService
-    
-    # Check if user is logged in
-    if not session.get('user_id'):
-        return jsonify({"error": "Not authenticated"}), 401
-    
-    try:
-        user_id = session['user_id']
-        user_role = session.get('user_role')
-        
-        if user_role != 'POWER_USER' and user_role != 'ADMIN':
-            return jsonify({"error": "Only service providers can confirm bookings"}), 403
-        
-        # Get the booking
-        booking = BookingService.get_booking(booking_id)
-        if not booking:
-            return jsonify({"error": "Booking not found"}), 404
-        
-        # Check if it's the provider's service
-        service = ServiceService.get_service(booking.service_id)
-        if not service:
-            return jsonify({"error": "Service not found"}), 404
-        
-        if user_role != 'ADMIN' and service.provider_id != user_id:
-            return jsonify({"error": "Not your service"}), 403
-        
-        # Confirm booking
-        success, message = BookingService.confirm_booking(booking_id)
-        
-        if success:
-            return jsonify({"message": message}), 200
-        else:
-            return jsonify({"error": message}), 400
-    except Exception as e:
-        import logging
-        logging.error(f"Error in confirm_booking_ui: {str(e)}")
-        return jsonify({"error": str(e)}), 500
 
-@app.route('/bookings/<int:booking_id>/reject', methods=['POST'])
-def reject_booking_ui(booking_id):
-    """Reject a booking (provider only)"""
-    # Import here to avoid circular imports
-    from services.booking_service import BookingService
-    from services.service_service import ServiceService
-    
-    # Check if user is logged in
-    if not session.get('user_id'):
-        return jsonify({"error": "Not authenticated"}), 401
-    
-    try:
-        user_id = session['user_id']
-        user_role = session.get('user_role')
-        
-        if user_role != 'POWER_USER' and user_role != 'ADMIN':
-            return jsonify({"error": "Only service providers can reject bookings"}), 403
-        
-        # Get the booking
-        booking = BookingService.get_booking(booking_id)
-        if not booking:
-            return jsonify({"error": "Booking not found"}), 404
-        
-        # Check if it's the provider's service
-        service = ServiceService.get_service(booking.service_id)
-        if not service:
-            return jsonify({"error": "Service not found"}), 404
-        
-        if user_role != 'ADMIN' and service.provider_id != user_id:
-            return jsonify({"error": "Not your service"}), 403
-        
-        # Get reason if provided
-        data = request.get_json() or {}
-        reason = data.get('reason')
-        
-        # Reject booking
-        success, message = BookingService.reject_booking(booking_id, reason)
-        
-        if success:
-            return jsonify({"message": message}), 200
-        else:
-            return jsonify({"error": message}), 400
-    except Exception as e:
-        import logging
-        logging.error(f"Error in reject_booking_ui: {str(e)}")
-        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/services-ui', methods=['GET'])
 def get_services_ui():

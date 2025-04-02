@@ -22,7 +22,7 @@
                     </li>
                     {% if session.get('user_id') %}
                     <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="alert('My Bookings feature coming soon!')">My Bookings</a>
+                        <a class="nav-link" href="{{ url_for('my_bookings') }}">My Bookings</a>
                     </li>
                     {% if session.get('user_role') == 'POWER_USER' %}
                     <li class="nav-item">
