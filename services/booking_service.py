@@ -305,6 +305,25 @@ class BookingService:
             return False, f"Database error: {str(e)}"
     
     @staticmethod
+    def confirm_booking(booking_id):
+        """Confirm a booking (service provider only)"""
+        booking = Booking.query.get(booking_id)
+        if not booking:
+            return False, "Booking not found"
+        
+        if booking.status != BookingStatus.PENDING:
+            return False, f"Cannot confirm booking with status {booking.status}"
+        
+        try:
+            booking.status = BookingStatus.CONFIRMED
+            db.session.commit()
+            return True, "Booking confirmed"
+            
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            return False, f"Database error: {str(e)}"
+    
+    @staticmethod
     def reject_booking(booking_id, reason=None):
         """Reject a booking (service provider only)"""
         booking = Booking.query.get(booking_id)

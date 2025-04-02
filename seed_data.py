@@ -243,6 +243,113 @@ def create_test_data(force=False):
         
         db.session.commit()
         
+        # Create bookings
+        from models.booking import Booking, BookingStatus
+        from models.transaction import Transaction, TransactionType
+        
+        # Get regular user and their wallet
+        user = User.query.filter_by(email="user@example.com").first()
+        user_wallet = Wallet.query.filter_by(user_id=user.id).first()
+        
+        # Create different bookings with different statuses to demonstrate the My Bookings page
+        # Pending booking
+        pending_booking = Booking(
+            service_id=car_service1.id,
+            user_id=user.id,
+            amount=car_service1.price,
+            quantity=1,
+            notes="Need pickup at 8:00 AM sharp"
+        )
+        pending_booking.booking_time = datetime.strptime("2025-04-05 08:00:00", "%Y-%m-%d %H:%M:%S")
+        # Status is already PENDING by default
+        
+        # Confirmed booking
+        confirmed_booking = Booking(
+            service_id=gym_service1.id,
+            user_id=user.id,
+            amount=gym_service1.price if hasattr(gym_service1, 'price') and gym_service1.price else 800.00,
+            quantity=1,
+            notes="Need personal training for weight loss"
+        )
+        confirmed_booking.booking_time = datetime.strptime("2025-04-06 10:00:00", "%Y-%m-%d %H:%M:%S")
+        confirmed_booking.status = BookingStatus.CONFIRMED
+        
+        # Create transaction for the confirmed booking
+        confirm_transaction = Transaction(
+            wallet_id=user_wallet.id,
+            amount=confirmed_booking.amount,
+            transaction_type=TransactionType.PAYMENT,
+            description=f"Payment for {gym_service1.name}",
+            reference_id="1"  # This will be updated after booking is saved
+        )
+        
+        # Completed booking
+        completed_booking = Booking(
+            service_id=household_service1.id,
+            user_id=user.id,
+            amount=household_service1.price,
+            quantity=1,
+            notes="Please bring eco-friendly cleaning supplies"
+        )
+        completed_booking.booking_time = datetime.strptime("2025-04-01 09:00:00", "%Y-%m-%d %H:%M:%S")
+        completed_booking.status = BookingStatus.COMPLETED
+        
+        # Create transaction for the completed booking
+        complete_transaction = Transaction(
+            wallet_id=user_wallet.id,
+            amount=completed_booking.amount,
+            transaction_type=TransactionType.PAYMENT,
+            description=f"Payment for {household_service1.name}",
+            reference_id="2"  # This will be updated after booking is saved
+        )
+        
+        # Cancelled booking
+        cancelled_booking = Booking(
+            service_id=mechanical_service1.id,
+            user_id=user.id,
+            amount=mechanical_service1.service_charge,
+            quantity=1,
+            notes="Need full service"
+        )
+        cancelled_booking.booking_time = datetime.strptime("2025-04-03 14:00:00", "%Y-%m-%d %H:%M:%S")
+        cancelled_booking.status = BookingStatus.CANCELLED
+        
+        # Add bookings to database
+        db.session.add_all([
+            pending_booking, confirmed_booking, completed_booking, cancelled_booking,
+            confirm_transaction, complete_transaction
+        ])
+        
+        db.session.commit()
+        
+        # Update transaction reference IDs with actual booking IDs
+        confirm_transaction.reference_id = str(confirmed_booking.id)
+        complete_transaction.reference_id = str(completed_booking.id)
+        
+        # Link transactions to bookings
+        confirmed_booking.transaction_id = confirm_transaction.id
+        completed_booking.transaction_id = complete_transaction.id
+        
+        db.session.commit()
+        
+        # Provider's bookings
+        # Get provider1 and create a booking for them
+        provider1 = User.query.filter_by(email="provider1@example.com").first()
+        provider1_service = Service.query.filter_by(provider_id=provider1.id).first()
+        
+        booking_for_provider1 = Booking(
+            service_id=provider1_service.id,
+            user_id=admin_user.id,  # Admin user books the service
+            amount=provider1_service.price if hasattr(provider1_service, 'price') and provider1_service.price else 250.00,
+            quantity=1,
+            notes="Test booking by admin"
+        )
+        booking_for_provider1.booking_time = datetime.strptime("2025-04-04 15:00:00", "%Y-%m-%d %H:%M:%S")
+        # Status is already PENDING by default
+        
+        db.session.add(booking_for_provider1)
+        db.session.commit()
+        
         print("Test data created successfully!")
 
 if __name__ == "__main__":
