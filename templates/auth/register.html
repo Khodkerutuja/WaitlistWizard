@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Local Service Platform</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Local Service Platform</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/login">Login</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow">
+                    <div class="card-body p-5">
+                        <h2 class="text-center mb-4">Create an Account</h2>
+                        
+                        <div class="alert alert-danger d-none" id="error-message"></div>
+                        <div class="alert alert-success d-none" id="success-message"></div>
+                        
+                        <form id="register-form">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                                <div class="form-text">Password must be at least 6 characters long.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Account Type</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="role" id="role-user" value="user" checked>
+                                    <label class="form-check-label" for="role-user">
+                                        User (Service Consumer)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="role" id="role-provider" value="power_user">
+                                    <label class="form-check-label" for="role-provider">
+                                        Service Provider
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">Register</button>
+                            </div>
+                        </form>
+                        
+                        <div class="text-center mt-3">
+                            <p>Already have an account? <a href="/auth/login">Login</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="text-center">
+                <p>&copy; 2023 Local Service Platform. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const registerForm = document.getElementById('register-form');
+            const errorMessage = document.getElementById('error-message');
+            const successMessage = document.getElementById('success-message');
+            
+            registerForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                const username = document.getElementById('username').value;
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const role = document.querySelector('input[name="role"]:checked').value;
+                
+                // Hide any previous messages
+                errorMessage.classList.add('d-none');
+                successMessage.classList.add('d-none');
+                
+                // API call to register
+                fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        email: email,
+                        password: password,
+                        role: role
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.user) {
+                        // Show success message
+                        successMessage.textContent = data.message;
+                        successMessage.classList.remove('d-none');
+                        
+                        // Clear form
+                        registerForm.reset();
+                        
+                        // Redirect to login after 2 seconds if user is not a provider
+                        if (role === 'user') {
+                            setTimeout(() => {
+                                window.location.href = '/auth/login';
+                            }, 2000);
+                        }
+                    } else {
+                        // Show error message
+                        errorMessage.textContent = data.message || 'Registration failed';
+                        errorMessage.classList.remove('d-none');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    errorMessage.textContent = 'An error occurred. Please try again.';
+                    errorMessage.classList.remove('d-none');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
