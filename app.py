@@ -280,8 +280,36 @@ def book_service(service_id):
     if not user:
         import logging
         logging.error(f"User with ID {user_id} does not exist in database")
-        flash('There was an error creating your booking. Please try again.', 'danger')
-        return redirect(url_for('service_detail', service_id=service_id))
+        
+        # Get user details from session
+        user_email = session.get('user_email')
+        user_role = session.get('user_role')
+        
+        if user_email:
+            try:
+                # Create a new user with the session data
+                new_user = User(
+                    email=user_email,
+                    password="temporary_password",  # Will be reset at next login
+                    first_name="User",  # Placeholder
+                    last_name=str(user_id),  # Placeholder
+                    phone_number="1234567890",  # Placeholder
+                    role=user_role or 'USER'
+                )
+                db.session.add(new_user)
+                db.session.commit()
+                
+                logging.info(f"Created new user with ID {new_user.id} for session user {user_id}")
+                user = new_user
+                user_id = new_user.id
+                session['user_id'] = user_id  # Update session with new user ID
+            except Exception as e:
+                logging.error(f"Error creating new user: {str(e)}")
+                flash('There was an error creating your booking. Please try again or log out and back in.', 'danger')
+                return redirect(url_for('service_detail', service_id=service_id))
+        else:
+            flash('There was an error with your account. Please log out and log back in.', 'danger')
+            return redirect(url_for('service_detail', service_id=service_id))
 
     # Create booking
     booking = Booking(
@@ -294,11 +322,29 @@ def book_service(service_id):
         booking_time=booking_datetime
     )
     
-    db.session.add(booking)
-    db.session.commit()
+    try:
+        db.session.add(booking)
+        db.session.commit()
+        
+        # Create a wallet for the user if it doesn't exist
+        from models.wallet import Wallet
+        wallet = Wallet.query.filter_by(user_id=user_id).first()
+        if not wallet:
+            wallet = Wallet(user_id=user_id, initial_balance=0)
+            db.session.add(wallet)
+            db.session.commit()
+        
+        flash('Service booked successfully! You can manage your bookings on the My Bookings page.', 'success')
+        
+        # Redirect to the my_bookings page instead of service detail
+        return redirect(url_for('my_bookings'))
     
-    flash('Service booked successfully!', 'success')
-    return redirect(url_for('service_detail', service_id=service_id))
+    except Exception as e:
+        import logging
+        logging.error(f"Error saving booking: {str(e)}")
+        db.session.rollback()
+        flash('There was an error booking the service. Please try again.', 'danger')
+        return redirect(url_for('service_detail', service_id=service_id))
 
 # Add review route
 @app.route('/service/<int:service_id>/review', methods=['POST'])
