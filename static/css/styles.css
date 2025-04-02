@@ -1,4 +1,4 @@
-/* Custom styles for Local Service Platform API */
+/* Custom styles for Local Service Platform */
 
 body {
     font-family: 'Inter', sans-serif;
@@ -15,6 +15,45 @@ body {
 .card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Service cards */
+.service-card {
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    height: 100%;
+}
+
+.service-card:hover {
+    border: 1px solid var(--bs-primary);
+}
+
+.service-icon {
+    width: 48px;
+    height: 48px;
+    padding: 10px;
+    border-radius: 50%;
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+.text-success .service-icon {
+    background-color: rgba(var(--bs-success-rgb), 0.1);
+}
+
+.text-info .service-icon {
+    background-color: rgba(var(--bs-info-rgb), 0.1);
+}
+
+.text-warning .service-icon {
+    background-color: rgba(var(--bs-warning-rgb), 0.1);
+}
+
+.icon-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1rem;
 }
 
 /* List group items */

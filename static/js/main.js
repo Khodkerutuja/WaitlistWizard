@@ -37,6 +37,23 @@ document.addEventListener('DOMContentLoaded', function() {
             checkApiHealth(true);
         });
     }
+
+    // Initialize service category selection
+    const serviceCategories = document.querySelectorAll('[onclick^="fetchServices"]');
+    if (serviceCategories.length > 0) {
+        // Click the first category to show services by default
+        // serviceCategories[0].click();
+
+        // Add active class on click
+        serviceCategories.forEach(category => {
+            category.addEventListener('click', function() {
+                serviceCategories.forEach(c => {
+                    c.querySelector('.card').classList.remove('border-primary');
+                });
+                this.querySelector('.card').classList.add('border-primary');
+            });
+        });
+    }
 });
 
 /**
@@ -80,6 +97,145 @@ function checkApiHealth(showAlert = false) {
             if (showAlert) {
                 showNotification('Could not connect to API', 'danger');
             }
+        });
+}
+
+/**
+ * Fetch services by service type
+ * @param {string} serviceType - The service type to filter by
+ */
+function fetchServices(serviceType) {
+    const servicesList = document.getElementById('services-list');
+    if (!servicesList) return;
+    
+    // Show loading state
+    servicesList.innerHTML = `
+        <div class="col-12 text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">Loading services...</p>
+        </div>
+    `;
+    
+    // Update section title based on service type
+    const sectionTitle = document.querySelector('#services-container h2');
+    if (sectionTitle) {
+        let title = 'Available Services';
+        
+        switch (serviceType) {
+            case 'CAR_POOL':
+                title = 'Car & Bike Pool Services';
+                break;
+            case 'GYM_FITNESS':
+                title = 'Gym & Fitness Services';
+                break;
+            case 'HOUSEHOLD':
+                title = 'Household Services';
+                break;
+            case 'MECHANICAL':
+                title = 'Mechanical Services';
+                break;
+        }
+        
+        sectionTitle.textContent = title;
+    }
+    
+    // Fetch services from API
+    const apiUrl = `/api/services-ui?service_type=${serviceType}&status=AVAILABLE`;
+    
+    fetch(apiUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data && Array.isArray(data)) {
+                if (data.length === 0) {
+                    // No services found
+                    servicesList.innerHTML = `
+                        <div class="col-12 text-center py-5">
+                            <p>No ${serviceType.toLowerCase().replace('_', ' ')} services available at this time.</p>
+                            <a href="/register" class="btn btn-outline-primary mt-3">Become a Service Provider</a>
+                        </div>
+                    `;
+                } else {
+                    // Render services
+                    servicesList.innerHTML = '';
+                    
+                    data.forEach(service => {
+                        let serviceIconClass = 'truck';
+                        let serviceColorClass = 'primary';
+                        
+                        switch (service.service_type) {
+                            case 'CAR_POOL':
+                                serviceIconClass = 'truck';
+                                serviceColorClass = 'primary';
+                                break;
+                            case 'GYM_FITNESS':
+                                serviceIconClass = 'activity';
+                                serviceColorClass = 'success';
+                                break;
+                            case 'HOUSEHOLD':
+                                serviceIconClass = 'home';
+                                serviceColorClass = 'info';
+                                break;
+                            case 'MECHANICAL':
+                                serviceIconClass = 'tool';
+                                serviceColorClass = 'warning';
+                                break;
+                        }
+                        
+                        const serviceCard = document.createElement('div');
+                        serviceCard.className = 'col-md-4 mb-4';
+                        serviceCard.innerHTML = `
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <i data-feather="${serviceIconClass}" class="me-2 text-${serviceColorClass}"></i>
+                                            <h5 class="card-title mb-0">${service.name}</h5>
+                                        </div>
+                                        <span class="badge bg-${serviceColorClass}">${service.price ? '₹' + service.price : 'Contact'}</span>
+                                    </div>
+                                    <p class="card-text">${service.description}</p>
+                                    <a href="/service/${service.id}" class="btn btn-sm btn-outline-${serviceColorClass} mt-2">View Details</a>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <small class="text-muted">
+                                        <i data-feather="user" class="me-1" style="width: 14px; height: 14px;"></i>
+                                        ${service.provider_name || 'Service Provider'}
+                                    </small>
+                                </div>
+                            </div>
+                        `;
+                        
+                        servicesList.appendChild(serviceCard);
+                    });
+                    
+                    // Re-initialize feather icons for new content
+                    feather.replace();
+                }
+            } else {
+                throw new Error('Invalid response format');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching services:', error);
+            
+            // Show error message
+            servicesList.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <div class="alert alert-danger">
+                        <i data-feather="alert-triangle" class="me-2"></i>
+                        Error loading services. Please try again later.
+                    </div>
+                </div>
+            `;
+            
+            feather.replace();
         });
 }
 

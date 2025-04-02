@@ -3,73 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Local Service Platform API</title>
+    <title>Local Service Platform</title>
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">Local Service Platform</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('index') }}">Home</a>
+                    </li>
+                    {% if session.get('user_id') %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="alert('My Bookings feature coming soon!')">My Bookings</a>
+                    </li>
+                    {% if session.get('user_role') == 'POWER_USER' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="alert('My Services feature coming soon!')">My Services</a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="alert('Wallet feature coming soon!')">Wallet</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login_page') }}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('register_page') }}">Register</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
     <div class="container py-5">
         <header class="mb-5 text-center">
-            <h1 class="display-4">Local Service Platform API</h1>
+            <h1 class="display-4">Local Service Platform</h1>
             <p class="lead">A comprehensive platform for managing local services with multiple user roles</p>
         </header>
 
+        <!-- Service Categories Section -->
+        <h2 class="mb-4">Service Categories</h2>
         <div class="row mb-5">
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-3">
-                            <i data-feather="users" class="me-2 text-primary"></i>
-                            <h4 class="card-title mb-0">User Management</h4>
+            <div class="col-md-3 mb-4">
+                <a href="#" onclick="fetchServices('CAR_POOL')" class="text-decoration-none">
+                    <div class="card h-100 service-card">
+                        <div class="card-body text-center">
+                            <div class="icon-container mb-3">
+                                <i data-feather="truck" class="service-icon text-primary"></i>
+                            </div>
+                            <h4 class="card-title">Car/Bike Pool</h4>
+                            <p class="card-text">Find rides or offer your vehicle for carpooling services</p>
                         </div>
-                        <p class="card-text">Register and manage different user roles including service consumers, providers, and administrators.</p>
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">User registration and authentication</li>
-                            <li class="list-group-item">Profile management</li>
-                            <li class="list-group-item">Service provider approval workflow</li>
-                        </ul>
                     </div>
-                </div>
+                </a>
             </div>
 
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-3">
-                            <i data-feather="credit-card" class="me-2 text-success"></i>
-                            <h4 class="card-title mb-0">Wallet System</h4>
+            <div class="col-md-3 mb-4">
+                <a href="#" onclick="fetchServices('GYM_FITNESS')" class="text-decoration-none">
+                    <div class="card h-100 service-card">
+                        <div class="card-body text-center">
+                            <div class="icon-container mb-3">
+                                <i data-feather="activity" class="service-icon text-success"></i>
+                            </div>
+                            <h4 class="card-title">Gym & Fitness</h4>
+                            <p class="card-text">Personal trainers, fitness classes, and gym facilities</p>
                         </div>
-                        <p class="card-text">Integrated digital wallet for all transactions within the platform.</p>
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">Balance management</li>
-                            <li class="list-group-item">Payment processing</li>
-                            <li class="list-group-item">Transaction history</li>
-                            <li class="list-group-item">Commission handling</li>
-                        </ul>
                     </div>
-                </div>
+                </a>
             </div>
 
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-3">
-                            <i data-feather="layers" class="me-2 text-warning"></i>
-                            <h4 class="card-title mb-0">Service Categories</h4>
+            <div class="col-md-3 mb-4">
+                <a href="#" onclick="fetchServices('HOUSEHOLD')" class="text-decoration-none">
+                    <div class="card h-100 service-card">
+                        <div class="card-body text-center">
+                            <div class="icon-container mb-3">
+                                <i data-feather="home" class="service-icon text-info"></i>
+                            </div>
+                            <h4 class="card-title">Household</h4>
+                            <p class="card-text">Cleaning, gardening, cooking, and other home services</p>
                         </div>
-                        <p class="card-text">Diverse service categories to fulfill various customer needs.</p>
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">Car/Bike Pool Services</li>
-                            <li class="list-group-item">Gym Fitness Services</li>
-                            <li class="list-group-item">Household Services</li>
-                            <li class="list-group-item">Mechanical Services</li>
-                        </ul>
                     </div>
-                </div>
+                </a>
+            </div>
+
+            <div class="col-md-3 mb-4">
+                <a href="#" onclick="fetchServices('MECHANICAL')" class="text-decoration-none">
+                    <div class="card h-100 service-card">
+                        <div class="card-body text-center">
+                            <div class="icon-container mb-3">
+                                <i data-feather="tool" class="service-icon text-warning"></i>
+                            </div>
+                            <h4 class="card-title">Mechanical</h4>
+                            <p class="card-text">Vehicle repairs, maintenance, and other mechanical services</p>
+                        </div>
+                    </div>
+                </a>
             </div>
         </div>
 
+        <!-- Service Listings Section -->
+        <div id="services-container" class="mb-5">
+            <h2 class="mb-4">Available Services</h2>
+            <div id="services-list" class="row">
+                <!-- Service cards will be loaded here dynamically -->
+                <div class="col-12 text-center py-5">
+                    <p>Select a service category above to see available services</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Platform Features Section -->
+        <h2 class="mb-4">Platform Features</h2>
         <div class="row mb-5">
             <div class="col-md-6 mb-4">
                 <div class="card h-100">
