@@ -107,7 +107,7 @@ def login_page():
             session['jwt_token'] = access_token
             
             flash('Login successful!', 'success')
-            return redirect(url_for('index'))
+            return redirect(url_for('index', login='success'))
         else:
             error = 'Invalid email or password'
     
@@ -157,7 +157,7 @@ def register_page():
             db.session.commit()
             
             flash('Account created successfully! Please login.', 'success')
-            return redirect(url_for('login_page'))
+            return redirect(url_for('login_page', registered='success'))
     
     return render_template('register.html', form=form, error=error)
 
@@ -166,7 +166,7 @@ def register_page():
 def logout():
     session.clear()
     flash('You have been logged out.', 'info')
-    return redirect(url_for('index'))
+    return redirect(url_for('index', logout='success'))
 
 # Service detail page
 @app.route('/service/<int:service_id>')

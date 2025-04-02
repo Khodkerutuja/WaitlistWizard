@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', function() {
         yearSpan.textContent = new Date().getFullYear();
     }
     
+    // Check for login notifications
+    checkForLoginNotifications();
+    
     // Add smooth scrolling to all links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
@@ -273,4 +276,33 @@ function showNotification(message, type = 'info') {
             }, 150);
         }
     }, 5000);
+}
+
+/**
+ * Check for login success notification
+ */
+function checkForLoginNotifications() {
+    // Check for URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Check for login success
+    if (urlParams.has('login') && urlParams.get('login') === 'success') {
+        showNotification('Login successful! Welcome back.', 'success');
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
+    // Check for registration success
+    if (urlParams.has('registered') && urlParams.get('registered') === 'success') {
+        showNotification('Registration successful! You can now log in.', 'success');
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
+    // Check for logout
+    if (urlParams.has('logout') && urlParams.get('logout') === 'success') {
+        showNotification('You have been logged out successfully.', 'info');
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
 }
