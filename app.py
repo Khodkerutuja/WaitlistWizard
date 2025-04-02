@@ -288,6 +288,15 @@ def my_bookings():
     
     return render_template('my_bookings.html')
 
+@app.route('/wallet')
+def wallet_page():
+    # Check if user is logged in
+    if not session.get('user_id'):
+        flash('Please login to access your wallet.', 'danger')
+        return redirect(url_for('login_page'))
+    
+    return render_template('wallet.html')
+
 # Bookings API for frontend
 @app.route('/bookings', methods=['GET'])
 def get_bookings_ui():
@@ -562,6 +571,164 @@ def complete_booking_ui(booking_id):
         return jsonify({"error": str(e)}), 500
 
 
+
+# Wallet API for UI
+@app.route('/api/wallet', methods=['GET'])
+def get_wallet_ui():
+    """Get wallet for the current user"""
+    # Import here to avoid circular imports
+    from services.wallet_service import WalletService
+    
+    # Check if user is logged in
+    if not session.get('user_id'):
+        return jsonify({"error": "Not authenticated"}), 401
+    
+    try:
+        user_id = session['user_id']
+        
+        # Get the wallet
+        wallet = WalletService.get_wallet(user_id)
+        if not wallet:
+            return jsonify({"error": "Wallet not found"}), 404
+        
+        # Format response
+        wallet_data = wallet.to_dict()
+        
+        # Get recent transactions
+        transactions = WalletService.get_transactions(wallet.id, 5)
+        
+        return jsonify({
+            "wallet": wallet_data,
+            "recent_transactions": [tx.to_dict() for tx in transactions]
+        }), 200
+    except Exception as e:
+        import logging
+        logging.error(f"Error in get_wallet_ui: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/wallet/transactions', methods=['GET'])
+def get_wallet_transactions_ui():
+    """Get transactions for the current user's wallet"""
+    # Import here to avoid circular imports
+    from services.wallet_service import WalletService
+    
+    # Check if user is logged in
+    if not session.get('user_id'):
+        return jsonify({"error": "Not authenticated"}), 401
+    
+    try:
+        user_id = session['user_id']
+        
+        # Get the wallet
+        wallet = WalletService.get_wallet(user_id)
+        if not wallet:
+            return jsonify({"error": "Wallet not found"}), 404
+        
+        # Get limit from query parameters
+        limit = int(request.args.get('limit', 10))
+        
+        # Get transactions
+        transactions = WalletService.get_transactions(wallet.id, limit)
+        
+        return jsonify({
+            "transactions": [tx.to_dict() for tx in transactions]
+        }), 200
+    except Exception as e:
+        import logging
+        logging.error(f"Error in get_wallet_transactions_ui: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/wallet/add-funds', methods=['POST'])
+def add_funds_ui():
+    """Add funds to user's wallet"""
+    # Import here to avoid circular imports
+    from services.wallet_service import WalletService
+    
+    # Check if user is logged in
+    if not session.get('user_id'):
+        return jsonify({"error": "Not authenticated"}), 401
+    
+    try:
+        user_id = session['user_id']
+        
+        # Get request data
+        data = request.get_json()
+        if not data or 'amount' not in data:
+            return jsonify({"error": "amount is required"}), 400
+        
+        try:
+            amount = float(data.get('amount'))
+        except (ValueError, TypeError):
+            return jsonify({"error": "amount must be a number"}), 400
+        
+        if amount <= 0:
+            return jsonify({"error": "amount must be positive"}), 400
+        
+        # Add funds to wallet
+        success, result = WalletService.add_funds(user_id, amount)
+        
+        if success:
+            wallet = result
+            return jsonify({
+                "message": f"₹{amount:.2f} added to wallet successfully",
+                "wallet": wallet.to_dict()
+            }), 200
+        else:
+            return jsonify({"error": result}), 400
+    except Exception as e:
+        import logging
+        logging.error(f"Error in add_funds_ui: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/wallet/transfer', methods=['POST'])
+def transfer_funds_ui():
+    """Transfer funds to another user"""
+    # Import here to avoid circular imports
+    from services.wallet_service import WalletService
+    
+    # Check if user is logged in
+    if not session.get('user_id'):
+        return jsonify({"error": "Not authenticated"}), 401
+    
+    try:
+        from_user_id = session['user_id']
+        
+        # Get request data
+        data = request.get_json()
+        if not data or 'to_user_id' not in data or 'amount' not in data:
+            return jsonify({"error": "to_user_id and amount are required"}), 400
+        
+        try:
+            to_user_id = int(data.get('to_user_id'))
+            amount = float(data.get('amount'))
+        except (ValueError, TypeError):
+            return jsonify({"error": "Invalid input types"}), 400
+        
+        if amount <= 0:
+            return jsonify({"error": "amount must be positive"}), 400
+        
+        if from_user_id == to_user_id:
+            return jsonify({"error": "Cannot transfer to yourself"}), 400
+        
+        # Get the optional description
+        description = data.get('description')
+        
+        # Transfer funds
+        success, message = WalletService.transfer_funds(
+            from_user_id=from_user_id,
+            to_user_id=to_user_id,
+            amount=amount,
+            description=description
+        )
+        
+        if success:
+            return jsonify({"message": message}), 200
+        else:
+            return jsonify({"error": message}), 400
+    except Exception as e:
+        import logging
+        logging.error(f"Error in transfer_funds_ui: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/services-ui', methods=['GET'])
 def get_services_ui():
