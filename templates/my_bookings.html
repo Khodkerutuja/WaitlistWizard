@@ -232,6 +232,13 @@
             bookings.forEach(booking => {
                 const row = document.createElement('tr');
                 
+                // Add special class for cancelled or rejected bookings
+                if (booking.status === 'CANCELLED' || booking.status === 'REJECTED') {
+                    row.classList.add('text-muted');
+                    row.style.textDecoration = 'line-through';
+                    row.style.opacity = '0.7';
+                }
+                
                 // Determine status badge class
                 let statusClass = 'secondary';
                 switch (booking.status) {
@@ -296,6 +303,24 @@
                     actionButtons = `<span class="text-muted">No actions</span>`;
                 }
                 
+                // Determine if we need to add cancel icon for cancelled/rejected bookings
+                let statusDisplay = `<span class="badge bg-${statusClass}">${booking.status}</span>`;
+                if (booking.status === 'CANCELLED') {
+                    statusDisplay = `
+                        <span class="badge bg-${statusClass}">
+                            <i data-feather="x-circle" class="me-1" style="width: 14px; height: 14px;"></i>
+                            ${booking.status}
+                        </span>
+                    `;
+                } else if (booking.status === 'REJECTED') {
+                    statusDisplay = `
+                        <span class="badge bg-${statusClass}">
+                            <i data-feather="slash" class="me-1" style="width: 14px; height: 14px;"></i>
+                            ${booking.status}
+                        </span>
+                    `;
+                }
+                
                 row.innerHTML = `
                     <td>${booking.id}</td>
                     <td>
@@ -305,7 +330,7 @@
                     </td>
                     <td>${formattedDate}</td>
                     <td>₹${parseFloat(booking.amount).toFixed(2)}</td>
-                    <td><span class="badge bg-${statusClass}">${booking.status}</span></td>
+                    <td>${statusDisplay}</td>
                     <td>${actionButtons}</td>
                 `;
                 
@@ -314,6 +339,45 @@
             
             // Re-initialize feather icons
             feather.replace();
+        }
+        
+        /**
+         * Show a notification message
+         * @param {string} message - The message to display
+         * @param {string} type - The type of notification (success, danger, warning, info)
+         */
+        function showNotification(message, type = 'info') {
+            // Create notification container if it doesn't exist
+            let notificationContainer = document.getElementById('notification-container');
+            if (!notificationContainer) {
+                notificationContainer = document.createElement('div');
+                notificationContainer.id = 'notification-container';
+                notificationContainer.style.position = 'fixed';
+                notificationContainer.style.top = '20px';
+                notificationContainer.style.right = '20px';
+                notificationContainer.style.zIndex = '9999';
+                document.body.appendChild(notificationContainer);
+            }
+            
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} alert-dismissible fade show`;
+            notification.role = 'alert';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            // Add notification to container
+            notificationContainer.appendChild(notification);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 150);
+            }, 5000);
         }
 
         /**
@@ -364,7 +428,12 @@
                         showNotification(data.error, 'danger');
                     } else {
                         showNotification(data.message || 'Booking cancelled successfully', 'success');
-                        fetchBookings(); // Refresh bookings
+                        
+                        // Switch to cancelled tab to show the result
+                        document.getElementById('cancelled-tab').click();
+                        
+                        // Refresh bookings with cancelled filter
+                        fetchBookings('CANCELLED');
                     }
                 })
                 .catch(error => {
