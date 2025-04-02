@@ -282,72 +282,116 @@ def get_services_ui():
     # Import here to avoid circular imports
     from models.service import Service
     from models.user import User
+    from datetime import datetime
+    import logging
     
-    # Get query parameters
-    service_type = request.args.get('service_type')
-    status = request.args.get('status', 'AVAILABLE')
-    
-    # Build query
-    query = Service.query.filter_by(status=status)
-    
-    if service_type:
-        query = query.filter_by(service_type=service_type)
-    
-    # Get services
-    services = query.all()
-    
-    # Format response
-    result = []
-    for service in services:
-        provider = User.query.get(service.provider_id)
-        provider_name = f"{provider.first_name} {provider.last_name}" if provider else "Unknown"
+    try:
+        # Get query parameters
+        service_type = request.args.get('service_type')
+        status = request.args.get('status', 'AVAILABLE')
         
-        service_data = {
-            'id': service.id,
-            'name': service.name,
-            'description': service.description,
-            'service_type': service.service_type,
-            'price': float(service.price),
-            'status': service.status,
-            'provider_id': service.provider_id,
-            'provider_name': provider_name,
-            'created_at': service.created_at.strftime('%Y-%m-%d %H:%M:%S')
-        }
+        # Build query
+        query = Service.query.filter_by(status=status)
         
-        # Add service type specific fields
-        if service.service_type == 'CAR_POOL':
-            service_data.update({
-                'source': getattr(service, 'source', None),
-                'destination': getattr(service, 'destination', None),
-                'departure_time': getattr(service, 'departure_time', None),
-                'available_seats': getattr(service, 'available_seats', 0),
-                'total_seats': getattr(service, 'total_seats', 0),
-                'vehicle_type': getattr(service, 'vehicle_type', None),
-                'vehicle_model': getattr(service, 'vehicle_model', None),
-                'vehicle_number': getattr(service, 'vehicle_number', None),
-            })
-        elif service.service_type == 'GYM_FITNESS':
-            service_data.update({
-                'location': getattr(service, 'location', None),
-                'operating_hours': getattr(service, 'operating_hours', None),
-                'trainer_experience': getattr(service, 'trainer_experience', 0),
-                'category': getattr(service, 'category', None),
-            })
-        elif service.service_type == 'HOUSEHOLD':
-            service_data.update({
-                'category': getattr(service, 'category', None),
-                'estimated_time': getattr(service, 'estimated_time', 0),
-                'experience': getattr(service, 'experience', 0),
-                'service_area': getattr(service, 'service_area', None),
-            })
-        elif service.service_type == 'MECHANICAL':
-            service_data.update({
-                'specialization': getattr(service, 'specialization', None),
-                'vehicle_types': getattr(service, 'vehicle_types', None),
-                'experience': getattr(service, 'experience', 0),
-                'workshop_location': getattr(service, 'workshop_location', None),
-            })
+        if service_type:
+            query = query.filter_by(service_type=service_type)
         
-        result.append(service_data)
-    
-    return jsonify(result)
+        # Get services
+        services = query.all()
+        
+        # Format response
+        result = []
+        for service in services:
+            try:
+                provider = User.query.get(service.provider_id)
+                provider_name = f"{provider.first_name} {provider.last_name}" if provider else "Unknown"
+                
+                service_data = {
+                    'id': service.id,
+                    'name': service.name,
+                    'description': service.description,
+                    'service_type': service.service_type,
+                    'price': float(service.price),
+                    'status': service.status,
+                    'provider_id': service.provider_id,
+                    'provider_name': provider_name,
+                    'created_at': service.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                }
+                
+                # Add location from base class for all services
+                if hasattr(service, 'location') and service.location:
+                    service_data['location'] = service.location
+                
+                # Add service type specific fields based on what values are available
+                # We're not using getattr to avoid the deferred loader issues
+                if service.service_type == 'CAR_POOL':
+                    # Only add existing attributes to avoid accessing deferred loaders 
+                    # that don't have values set yet
+                    car_pool_fields = {}
+                    
+                    # Only include fields that actually exist on the service instance
+                    # to prevent deferred loader errors
+                    if hasattr(service, '__dict__'):
+                        service_dict = service.__dict__
+                        
+                        for field in ['source', 'destination', 'vehicle_type', 'vehicle_model', 'vehicle_number']:
+                            if field in service_dict:
+                                car_pool_fields[field] = service_dict[field]
+                        
+                        if 'departure_time' in service_dict:
+                            if isinstance(service_dict['departure_time'], datetime):
+                                car_pool_fields['departure_time'] = service_dict['departure_time'].strftime('%Y-%m-%d %H:%M:%S')
+                            else:
+                                car_pool_fields['departure_time'] = service_dict['departure_time']
+                        
+                        if 'available_seats' in service_dict:
+                            car_pool_fields['available_seats'] = service_dict['available_seats']
+                        
+                        if 'total_seats' in service_dict:
+                            car_pool_fields['total_seats'] = service_dict['total_seats']
+                    
+                    service_data.update(car_pool_fields)
+                elif service.service_type == 'GYM_FITNESS':
+                    gym_fields = {}
+                    
+                    if hasattr(service, '__dict__'):
+                        service_dict = service.__dict__
+                        
+                        for field in ['operating_hours', 'trainer_experience', 'category']:
+                            if field in service_dict:
+                                gym_fields[field] = service_dict[field]
+                    
+                    service_data.update(gym_fields)
+                elif service.service_type == 'HOUSEHOLD':
+                    household_fields = {}
+                    
+                    if hasattr(service, '__dict__'):
+                        service_dict = service.__dict__
+                        
+                        for field in ['category', 'estimated_time', 'experience', 'service_area']:
+                            if field in service_dict:
+                                household_fields[field] = service_dict[field]
+                    
+                    service_data.update(household_fields)
+                elif service.service_type == 'MECHANICAL':
+                    mechanical_fields = {}
+                    
+                    if hasattr(service, '__dict__'):
+                        service_dict = service.__dict__
+                        
+                        for field in ['specialization', 'vehicle_types', 'experience', 'workshop_location']:
+                            if field in service_dict:
+                                mechanical_fields[field] = service_dict[field]
+                    
+                    service_data.update(mechanical_fields)
+                
+                result.append(service_data)
+            except Exception as e:
+                # Log error but continue processing other services
+                logging.error(f"Error processing service {service.id}: {str(e)}")
+                continue
+        
+        return jsonify(result)
+    except Exception as e:
+        logging.error(f"Error in get_services_ui: {str(e)}")
+        return jsonify({"error": str(e)}), 500

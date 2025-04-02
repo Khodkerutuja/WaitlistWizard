@@ -1,16 +1,38 @@
 from app import app, db
 from werkzeug.security import generate_password_hash
 from models.user import User, UserRole, UserStatus
-from models.service import Service, ServiceStatus
+from models.service import Service, ServiceStatus, ServiceType
 from models.wallet import Wallet
+from models.car_pool import CarPoolService, VehicleType
+from models.gym import GymService
+from models.household import HouseholdService, HouseholdServiceType
+from models.mechanical import MechanicalService, MechanicalServiceType
+from datetime import datetime
 
-def create_test_data():
+def create_test_data(force=False):
     """Create test data for the application"""
     with app.app_context():
         # Check if data already exists
-        if User.query.count() > 0:
+        if User.query.count() > 0 and not force:
             print("Data already exists, skipping seed.")
             return
+            
+        # Clear existing data if force is true
+        if force:
+            print("Clearing existing data...")
+            try:
+                db.session.query(MechanicalService).delete()
+                db.session.query(HouseholdService).delete()
+                db.session.query(GymService).delete()
+                db.session.query(CarPoolService).delete()
+                db.session.query(Service).delete()
+                db.session.query(Wallet).delete()
+                db.session.query(User).delete()
+                db.session.commit()
+                print("Existing data cleared successfully.")
+            except Exception as e:
+                db.session.rollback()
+                print(f"Error clearing data: {e}")
         
         print("Creating test data...")
         
@@ -90,130 +112,126 @@ def create_test_data():
         
         db.session.commit()
         
-        # Create services
+        # Create services using the specific model classes instead of base Service class
+        # This ensures polymorphic attributes are properly set
+
         # Car Pool Services
-        car_service1 = Service(
+        departure_time1 = datetime.strptime("2025-04-02 08:00:00", "%Y-%m-%d %H:%M:%S")
+        departure_time2 = datetime.strptime("2025-04-03 09:00:00", "%Y-%m-%d %H:%M:%S")
+        
+        car_service1 = CarPoolService(
             name="Daily Commute - Central to Suburb",
             description="Daily car pool from central area to northern suburbs. Comfortable sedan with AC.",
             provider_id=service_provider1.id,
-            service_type="CAR_POOL",
             price=250.00,
-            location="Central City"
+            vehicle_type=VehicleType.CAR,
+            source="Central City",
+            destination="Northern Suburbs",
+            departure_time=departure_time1,
+            total_seats=4,
+            vehicle_model="Honda City",
+            vehicle_number="AB1234"
         )
         car_service1.status = ServiceStatus.AVAILABLE
-        setattr(car_service1, 'source', 'Central City')
-        setattr(car_service1, 'destination', 'Northern Suburbs')
-        setattr(car_service1, 'departure_time', '08:00 AM')
-        setattr(car_service1, 'available_seats', 3)
-        setattr(car_service1, 'total_seats', 4)
-        setattr(car_service1, 'vehicle_type', 'CAR')
-        setattr(car_service1, 'vehicle_model', 'Honda City')
-        setattr(car_service1, 'vehicle_number', 'AB1234')
         
-        car_service2 = Service(
+        car_service2 = CarPoolService(
             name="Weekend Getaway - City to Beach",
             description="Weekend car pool to the beach. SUV with ample space for luggage.",
             provider_id=service_provider1.id,
-            service_type="CAR_POOL",
             price=500.00,
-            location="City Center"
+            vehicle_type=VehicleType.CAR,
+            source="City Center",
+            destination="Beach Resort",
+            departure_time=departure_time2,
+            total_seats=6,
+            vehicle_model="Toyota Fortuner",
+            vehicle_number="XY5678"
         )
         car_service2.status = ServiceStatus.AVAILABLE
-        setattr(car_service2, 'source', 'City Center')
-        setattr(car_service2, 'destination', 'Beach Resort')
-        setattr(car_service2, 'departure_time', '09:00 AM')
-        setattr(car_service2, 'available_seats', 5)
-        setattr(car_service2, 'total_seats', 6)
-        setattr(car_service2, 'vehicle_type', 'CAR')
-        setattr(car_service2, 'vehicle_model', 'Toyota Fortuner')
-        setattr(car_service2, 'vehicle_number', 'XY5678')
+        car_service2.location = "City Center" 
         
         # Gym & Fitness Services
-        gym_service1 = Service(
+        gym_service1 = GymService(
             name="Personal Training Sessions",
             description="One-on-one personal training sessions tailored to your fitness goals.",
             provider_id=service_provider2.id,
-            service_type="GYM_FITNESS",
-            price=800.00,
-            location="FitZone Gym"
+            gym_name="FitZone Gym",
+            facility_types=["Cardio", "Weights", "Personal Training"],
+            operating_hours={"weekday": "6:00 AM - 9:00 PM", "weekend": "8:00 AM - 6:00 PM"},
+            subscription_plans={"MONTHLY": 800, "QUARTERLY": 2200, "ANNUAL": 8000},
+            trainers_available=True
         )
         gym_service1.status = ServiceStatus.AVAILABLE
-        setattr(gym_service1, 'location', 'FitZone Gym, Downtown')
-        setattr(gym_service1, 'operating_hours', '6:00 AM - 9:00 PM')
-        setattr(gym_service1, 'trainer_experience', 5)
-        setattr(gym_service1, 'category', 'Personal Training')
+        gym_service1.location = "FitZone Gym, Downtown"
         
-        gym_service2 = Service(
+        gym_service2 = GymService(
             name="Group Yoga Classes",
             description="Group yoga sessions for all experience levels.",
             provider_id=service_provider2.id,
-            service_type="GYM_FITNESS",
-            price=400.00,
-            location="Serene Yoga Studio"
+            gym_name="Serene Yoga Studio",
+            facility_types=["Yoga", "Meditation", "Pilates"],
+            operating_hours={"weekday": "7:00 AM - 8:00 PM", "weekend": "8:00 AM - 5:00 PM"},
+            subscription_plans={"MONTHLY": 400, "QUARTERLY": 1100, "ANNUAL": 4000},
+            trainers_available=True
         )
         gym_service2.status = ServiceStatus.AVAILABLE
-        setattr(gym_service2, 'location', 'Serene Yoga Studio, West End')
-        setattr(gym_service2, 'operating_hours', '7:00 AM - 8:00 PM')
-        setattr(gym_service2, 'trainer_experience', 8)
-        setattr(gym_service2, 'category', 'Yoga')
+        gym_service2.location = "Serene Yoga Studio, West End"
         
         # Household Services
-        household_service1 = Service(
+        household_service1 = HouseholdService(
             name="Deep House Cleaning",
             description="Comprehensive house cleaning service including all rooms and bathrooms.",
             provider_id=service_provider3.id,
-            service_type="HOUSEHOLD",
             price=1500.00,
+            household_type=HouseholdServiceType.CLEANING,
+            hourly_rate=300.00,
+            visit_charge=500.00,
+            estimated_duration=240,  # 4 hours in minutes
             location="Client's Home"
         )
         household_service1.status = ServiceStatus.AVAILABLE
-        setattr(household_service1, 'category', 'Cleaning')
-        setattr(household_service1, 'estimated_time', 4)
-        setattr(household_service1, 'experience', 6)
-        setattr(household_service1, 'service_area', 'All City Areas')
         
-        household_service2 = Service(
+        household_service2 = HouseholdService(
             name="Garden Maintenance",
             description="Garden maintenance including lawn mowing, trimming, and general maintenance.",
             provider_id=service_provider3.id,
-            service_type="HOUSEHOLD",
             price=800.00,
+            household_type=HouseholdServiceType.OTHER,
+            hourly_rate=200.00,
+            visit_charge=300.00,
+            estimated_duration=180,  # 3 hours in minutes
             location="Client's Garden"
         )
         household_service2.status = ServiceStatus.AVAILABLE
-        setattr(household_service2, 'category', 'Gardening')
-        setattr(household_service2, 'estimated_time', 3)
-        setattr(household_service2, 'experience', 5)
-        setattr(household_service2, 'service_area', 'Suburban Areas')
         
         # Mechanical Services
-        mechanical_service1 = Service(
+        mechanical_service1 = MechanicalService(
             name="Car Servicing and Repair",
             description="General car servicing and repair for all makes and models.",
             provider_id=service_provider4.id,
-            service_type="MECHANICAL",
-            price=2000.00,
+            service_charge=2000.00,
+            mechanical_type=MechanicalServiceType.CAR_REPAIR,
+            additional_charges_desc="Parts cost extra depending on car model",
+            estimated_time=120,  # 2 hours in minutes
+            offers_pickup=True,
+            pickup_charge=500.00,
             location="Mike's Garage"
         )
         mechanical_service1.status = ServiceStatus.AVAILABLE
-        setattr(mechanical_service1, 'specialization', 'Car Repair')
-        setattr(mechanical_service1, 'vehicle_types', 'All Cars')
-        setattr(mechanical_service1, 'experience', 10)
-        setattr(mechanical_service1, 'workshop_location', 'East Industrial Zone')
         
-        mechanical_service2 = Service(
+        mechanical_service2 = MechanicalService(
             name="Bike Tune-up",
             description="Complete tune-up for bikes, including brake adjustment, gear setting, and wheel alignment.",
             provider_id=service_provider4.id,
-            service_type="MECHANICAL",
-            price=800.00,
+            service_charge=800.00,
+            mechanical_type=MechanicalServiceType.BIKE_REPAIR,
+            additional_charges_desc="Parts replacement extra if needed",
+            estimated_time=60,  # 1 hour in minutes
+            offers_pickup=True,
+            pickup_charge=200.00,
             location="Mike's Garage"
         )
         mechanical_service2.status = ServiceStatus.AVAILABLE
-        setattr(mechanical_service2, 'specialization', 'Bike Repair')
-        setattr(mechanical_service2, 'vehicle_types', 'All Bikes')
-        setattr(mechanical_service2, 'experience', 8)
-        setattr(mechanical_service2, 'workshop_location', 'East Industrial Zone')
         
         # Add services to database
         db.session.add_all([
@@ -228,4 +246,4 @@ def create_test_data():
         print("Test data created successfully!")
 
 if __name__ == "__main__":
-    create_test_data()
+    create_test_data(force=True)
