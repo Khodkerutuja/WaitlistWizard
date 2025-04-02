@@ -1,0 +1,92 @@
+/* Custom styles for Local Service Platform API */
+
+body {
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+}
+
+/* Card hover effect */
+.card {
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* List group items */
+.list-group-item {
+    background-color: transparent;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Header styling */
+header {
+    padding: 2rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 2rem;
+}
+
+/* Footer styling */
+footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Button hover effects */
+.btn {
+    transition: transform 0.2s;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Icon styling */
+[data-feather] {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2;
+}
+
+.text-primary [data-feather] {
+    stroke: var(--bs-primary);
+}
+
+.text-success [data-feather] {
+    stroke: var(--bs-success);
+}
+
+.text-warning [data-feather] {
+    stroke: var(--bs-warning);
+}
+
+.text-info [data-feather] {
+    stroke: var(--bs-info);
+}
+
+.text-danger [data-feather] {
+    stroke: var(--bs-danger);
+}
+
+.text-secondary [data-feather] {
+    stroke: var(--bs-secondary);
+}
+
+/* Add spacing between sections */
+.row {
+    margin-bottom: 2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .display-4 {
+        font-size: 2.5rem;
+    }
+    
+    .card {
+        margin-bottom: 1.5rem;
+    }
+}
