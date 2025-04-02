@@ -6,6 +6,7 @@ from flask_marshmallow import Marshmallow
 from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required
 from flasgger import Swagger
 from flask_cors import CORS
+from flask_wtf.csrf import CSRFProtect
 from werkzeug.security import generate_password_hash, check_password_hash
 from forms import LoginForm, RegistrationForm
 
@@ -27,6 +28,13 @@ ma = Marshmallow(app)
 jwt = JWTManager(app)
 swagger = Swagger(app)
 CORS(app)
+csrf = CSRFProtect(app)
+
+# Add CSRF token to all templates
+@app.context_processor
+def inject_csrf_token():
+    from flask_wtf.csrf import generate_csrf
+    return {'csrf_token': generate_csrf()}
 
 # Import and register blueprints
 from controllers.auth_controller import auth_bp
