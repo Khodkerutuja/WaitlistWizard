@@ -255,15 +255,25 @@ def book_service(service_id):
         # Update available seats
         service.available_seats -= num_seats
     
+    # Convert booking_date string to datetime if provided
+    from datetime import datetime
+    booking_datetime = None
+    if booking_date:
+        try:
+            booking_datetime = datetime.fromisoformat(booking_date)
+        except ValueError:
+            # If parsing fails, use current time
+            booking_datetime = datetime.utcnow()
+    
     # Create booking
     booking = Booking(
         service_id=service_id,
         user_id=session['user_id'],
-        booking_time=booking_date,
         amount=service.price,
         quantity=quantity,
         notes=notes,
-        status='PENDING'
+        status='PENDING',
+        booking_time=booking_datetime
     )
     
     db.session.add(booking)

@@ -25,12 +25,16 @@ class Booking(db.Model):
     service = db.relationship('Service', foreign_keys="Booking.service_id", lazy=True)
     transaction = db.relationship('Transaction', backref=db.backref('booking', uselist=False), lazy=True)
     
-    def __init__(self, service_id, user_id, amount, quantity=1, notes=None):
+    def __init__(self, service_id, user_id, amount, quantity=1, notes=None, status=BookingStatus.PENDING, booking_time=None, start_time=None, end_time=None):
         self.service_id = service_id
         self.user_id = user_id
         self.amount = amount
         self.quantity = quantity
         self.notes = notes
+        self.status = status
+        self.booking_time = booking_time
+        self.start_time = start_time
+        self.end_time = end_time
     
     def cancel(self):
         """Cancel a booking"""
