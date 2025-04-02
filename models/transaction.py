@@ -1,6 +1,6 @@
 from datetime import datetime
 from app import db
-from models.wallet import TransactionType
+from models.enum_types import TransactionType
 
 class Transaction(db.Model):
     __tablename__ = 'transactions'

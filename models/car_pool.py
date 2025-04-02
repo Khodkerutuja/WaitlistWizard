@@ -1,10 +1,7 @@
 from app import db
-from models.service import Service, ServiceType
+from models.service import Service
+from models.enum_types import ServiceType, VehicleType
 import json
-
-class VehicleType:
-    CAR = 'CAR'
-    BIKE = 'BIKE'
 
 class CarPoolService(Service):
     __tablename__ = 'car_pool_services'

@@ -1,6 +1,6 @@
 from datetime import datetime
-from models.mechanical import MechanicalService, MechanicalServiceType
-from models.service import BookingStatus
+from models.mechanical import MechanicalService as MechanicalServiceModel, MechanicalServiceType
+from models.enum_types import BookingStatus
 from repositories.mechanical_repository import MechanicalRepository
 from repositories.booking_repository import BookingRepository
 from services.wallet_service import WalletService
@@ -70,7 +70,7 @@ class MechanicalService:
             raise ValueError("Pickup charge must be provided if pickup service is offered")
         
         # Create mechanical service
-        service = MechanicalService(
+        service = MechanicalServiceModel(
             name=name,
             description=description,
             provider_id=provider_id,

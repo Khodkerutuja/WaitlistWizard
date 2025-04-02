@@ -33,6 +33,7 @@ from controllers.auth_controller import auth_bp
 from controllers.user_controller import user_bp
 from controllers.wallet_controller import wallet_bp
 from controllers.service_controller import service_bp
+from controllers.booking_controller import booking_bp
 from controllers.car_pool_controller import car_pool_bp
 from controllers.gym_controller import gym_bp
 from controllers.household_controller import household_bp
@@ -44,6 +45,7 @@ app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(user_bp, url_prefix='/api/users')
 app.register_blueprint(wallet_bp, url_prefix='/api/wallet')
 app.register_blueprint(service_bp, url_prefix='/api/services')
+app.register_blueprint(booking_bp, url_prefix='/api/bookings')
 app.register_blueprint(car_pool_bp, url_prefix='/api/carpool')
 app.register_blueprint(gym_bp, url_prefix='/api/gym')
 app.register_blueprint(household_bp, url_prefix='/api/household')
@@ -150,7 +152,7 @@ def register_page():
             db.session.commit()
             
             # Create wallet for the user
-            wallet = Wallet(user_id=new_user.id, balance=0)
+            wallet = Wallet(user_id=new_user.id, initial_balance=0)
             db.session.add(wallet)
             db.session.commit()
             

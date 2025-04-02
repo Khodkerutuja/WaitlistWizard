@@ -1,6 +1,7 @@
 from datetime import datetime
-from models.car_pool import CarPoolService, BikePoolService, VehicleType
-from models.service import ServiceType, Booking, BookingStatus
+from models.car_pool import CarPoolService as CarPoolServiceModel, BikePoolService as BikePoolServiceModel
+from models.booking import Booking
+from models.enum_types import ServiceType, BookingStatus, VehicleType
 from repositories.car_pool_repository import CarPoolRepository
 from repositories.booking_repository import BookingRepository
 from services.wallet_service import WalletService
@@ -73,7 +74,7 @@ class CarPoolService:
         
         # Create appropriate service based on vehicle type
         if vehicle_type == VehicleType.CAR:
-            service = CarPoolService(
+            service = CarPoolServiceModel(
                 name=name,
                 description=description,
                 provider_id=provider_id,
@@ -87,7 +88,7 @@ class CarPoolService:
                 vehicle_number=vehicle_number
             )
         elif vehicle_type == VehicleType.BIKE:
-            service = BikePoolService(
+            service = BikePoolServiceModel(
                 name=name,
                 description=description,
                 provider_id=provider_id,

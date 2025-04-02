@@ -1,6 +1,6 @@
 from datetime import datetime
-from models.household import HouseholdService, HouseholdServiceType
-from models.service import BookingStatus
+from models.household import HouseholdService as HouseholdServiceModel, HouseholdServiceType
+from models.enum_types import BookingStatus
 from repositories.household_repository import HouseholdRepository
 from repositories.booking_repository import BookingRepository
 from services.wallet_service import WalletService
@@ -63,7 +63,7 @@ class HouseholdService:
             raise ValueError("At least one pricing model (price, hourly_rate, or visit_charge) must be provided")
         
         # Create household service
-        service = HouseholdService(
+        service = HouseholdServiceModel(
             name=name,
             description=description,
             provider_id=provider_id,

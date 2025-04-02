@@ -1,4 +1,5 @@
-from models.service import Booking, BookingStatus
+from models.booking import Booking
+from models.enum_types import BookingStatus
 from app import db
 
 class BookingRepository:

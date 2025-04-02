@@ -1,13 +1,6 @@
 from datetime import datetime
 from app import db
-
-class TransactionType:
-    DEPOSIT = 'DEPOSIT'
-    WITHDRAWAL = 'WITHDRAWAL'
-    PAYMENT = 'PAYMENT'
-    REFUND = 'REFUND'
-    COMMISSION = 'COMMISSION'
-    ADMIN_ADJUSTMENT = 'ADMIN_ADJUSTMENT'
+from models.enum_types import TransactionType
 
 class Wallet(db.Model):
     __tablename__ = 'wallets'
